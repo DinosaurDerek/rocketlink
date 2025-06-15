@@ -1,10 +1,12 @@
-## Token Dash
+## 🚀 Rocketlink
 
-**Token Dash** is a small demo app and code sample for a crypto dashboard built with Next.js. It displays a list of top tokens with basic price data and renders a historical price chart for the selected token. It's built with React, Emotion, and Next.js.
+**Rocketlink** is a solo-built crypto dashboard demo built with Next.js, designed for the Chromion Hackathon. It integrates Chainlink price feeds and smart contract automation on the Avalanche Fuji testnet.
+
+The app displays real-time token prices, renders historical price charts, and lets users set custom price alerts using Chainlink Automation. It’s built with React, Emotion, and Ethers.js for a clean, Web3-native frontend experience.
 
 ## Demo
 
-[Token Dash Demo — deployed via Vercel.](https://token-dash.vercel.app/)
+[Rocketlink Demo — deployed via Vercel.](https://rocketlink.vercel.app/)
 
 ## Notes
 
@@ -15,10 +17,10 @@
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/token-dash.git
+git clone https://github.com/your-username/rocketlink.git
 
 # Install dependencies
-cd token-dash
+cd rocketlink
 npm install
 
 # Run the dev server

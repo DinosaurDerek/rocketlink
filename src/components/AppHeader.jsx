@@ -4,7 +4,7 @@
 export default function AppHeader() {
   return (
     <header css={styles.container}>
-      <h1>Token Dash</h1>
+      <h1>🚀 Rocketlink</h1>
     </header>
   );
 }

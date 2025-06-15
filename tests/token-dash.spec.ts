@@ -24,7 +24,7 @@ const mockedHistory = [
   { timestamp: 2, price: 30000 },
 ];
 
-test.describe("Token Dash", () => {
+test.describe("Rocketlink", () => {
   test.beforeEach(async ({ page }) => {
     await page.route(
       "https://api.coingecko.com/api/v3/coins/markets*",
