@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 
-import { formatPercent, formatPrice } from "@/utils/format";
+import { formatPrice } from "@/utils/format";
 
 export default function TokenCard({ onClick, token, isSelected = false }) {
   return (
@@ -15,18 +15,15 @@ export default function TokenCard({ onClick, token, isSelected = false }) {
     >
       <div css={styles.nameWrapper}>
         <Image
-          src={token.image}
-          alt={token.name}
+          src={token.logo}
+          alt={token.label}
           css={styles.icon}
           width={20}
           height={20}
         />
-        <span data-testid="token-name">{token.name}</span>
+        <span data-testid="token-name">{token.label}</span>
       </div>
-      <div css={styles.price}>
-        {formatPrice(token.current_price)} (
-        {formatPercent(token.price_change_percentage_24h)})
-      </div>
+      <div css={styles.price}>{formatPrice(token.price)}</div>
     </button>
   );
 }

@@ -1,6 +1,10 @@
 import dayjs from "dayjs";
 
 export function formatPrice(value) {
+  if (!value) {
+    return "$0.00";
+  }
+
   const num = Number(value);
 
   if (num >= 10) {
@@ -17,6 +21,10 @@ export function formatPrice(value) {
 }
 
 export function formatHeadingPrice(value) {
+  if (!value) {
+    return "$0.00";
+  }
+
   const num = Number(value);
 
   return `$${num.toLocaleString(undefined, {

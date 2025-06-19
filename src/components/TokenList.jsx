@@ -4,25 +4,26 @@
 import { useEffect, useState } from "react";
 import { keyframes } from "@emotion/react";
 
-import { fetchTokens } from "@/utils/fetchTokens";
+import { fetchAllPrices } from "@/utils/fetchPrices";
 import { useToken } from "@/context/TokenContext";
-import TokenCard from "@/components/token-card/TokenCard";
+import TokenCard from "@/components/TokenCard";
 import Message from "@/components/Message";
 import Loader from "@/components/Loader";
+import { TOKENS } from "@/constants";
 
 export default function TokenList() {
   const { selectedToken, setSelectedToken } = useToken();
-  const [tokens, setTokens] = useState([]);
+  const [tokens, setTokens] = useState(TOKENS);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadTokens = async () => {
       try {
-        const response = await fetchTokens(setError);
-        setTokens(response);
+        const response = await fetchAllPrices();
         setError(null);
 
         if (response.length) {
+          setTokens(response);
           setSelectedToken(response[0]);
         }
       } catch (err) {
@@ -34,6 +35,10 @@ export default function TokenList() {
     loadTokens();
   }, [setError, setSelectedToken, setTokens]);
 
+  const handleClick = (token) => {
+    setSelectedToken(token);
+  };
+
   return (
     <div css={styles.container}>
       <h2 css={styles.heading}>Top Tokens</h2>
@@ -44,14 +49,16 @@ export default function TokenList() {
         </div>
       )}
       <div css={styles.list}>
-        {tokens.map((token) => (
-          <TokenCard
-            key={token.id}
-            token={token}
-            onClick={() => setSelectedToken(token)}
-            isSelected={selectedToken?.id === token.id}
-          />
-        ))}
+        {tokens.map((token) => {
+          return (
+            <TokenCard
+              key={token.id}
+              token={token}
+              onClick={() => handleClick(token)}
+              isSelected={selectedToken?.id === token.id}
+            />
+          );
+        })}
       </div>
     </div>
   );

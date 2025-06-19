@@ -46,18 +46,18 @@ export default function AppContent() {
   return (
     <div css={styles.container}>
       <h2 css={styles.heading} data-testid="token-heading">
-        {selectedToken.image && (
+        {selectedToken.logo && (
           <Image
-            src={selectedToken.image}
+            src={selectedToken.logo}
             alt={selectedToken.symbol.toUpperCase()}
             css={styles.logo}
             width={24}
             height={24}
           />
         )}
-        {selectedToken.name} ({selectedToken.symbol.toUpperCase()})
+        {selectedToken.label} ({selectedToken.symbol?.toUpperCase()})
       </h2>
-      <p>Current price: {formatHeadingPrice(selectedToken.current_price)}</p>
+      <p>Current price: {formatHeadingPrice(selectedToken.price)}</p>
       {error && <Message text={error.message} />}
       <div css={styles.chartWrapper}>
         {(error || loading) && (
