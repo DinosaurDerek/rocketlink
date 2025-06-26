@@ -17,12 +17,11 @@ const aggregatorV3InterfaceABI = [
     type: "function",
   },
 ];
-const RPC_URL = "https://api.avax-test.network/ext/bc/C/rpc";
 
 export async function fetchPriceFromChainlink(feedAddress) {
   const { Contract, JsonRpcProvider } = ethers;
 
-  const provider = new JsonRpcProvider(RPC_URL);
+  const provider = new JsonRpcProvider(process.env.NEXT_PUBLIC_FUJI_RPC_URL);
   const priceFeed = new Contract(
     feedAddress,
     aggregatorV3InterfaceABI,

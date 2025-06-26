@@ -27,7 +27,7 @@ export default function TokenList() {
           setSelectedToken(response[0]);
         }
       } catch (err) {
-        console.error("Failed to fetch top tokens:", err);
+        console.error("Failed to fetch prices:", err);
         setError(err);
       }
     };

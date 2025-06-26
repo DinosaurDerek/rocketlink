@@ -46,3 +46,18 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Hardhat build artifacts and cache
+artifacts/
+cache/
+
+# Ignition build/deploy state
+ignition/deployments/
+ignition/ignition.db/
+
+# Optional: ignore test coverage output
+coverage/
+
+# Optional: VSCode/editor files
+.vscode/
+*.log

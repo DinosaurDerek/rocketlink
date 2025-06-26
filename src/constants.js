@@ -1,3 +1,8 @@
+import PriceMonitor from "../artifacts/contracts/PriceMonitor.sol/PriceMonitor.json";
+
+export const CONTRACT_ABI = PriceMonitor.abi;
+export const FUJI_RPC_URL = process.env.NEXT_PUBLIC_FUJI_RPC_URL;
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 export const TOKENS = [
   {
     id: "ethereum",

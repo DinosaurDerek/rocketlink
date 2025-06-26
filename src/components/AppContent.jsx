@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 import { fetchPriceHistory } from "@/utils/fetchPriceHistory";
+import ThresholdBanner from "@/components/ThresholdBanner";
 import { formatHeadingPrice } from "@/utils/format";
 import { useToken } from "@/context/TokenContext";
 import TokenChart from "@/components/TokenChart";
@@ -57,6 +58,7 @@ export default function AppContent() {
         )}
         {selectedToken.label} ({selectedToken.symbol?.toUpperCase()})
       </h2>
+      <ThresholdBanner />
       <p>Current price: {formatHeadingPrice(selectedToken.price)}</p>
       {error && <Message text={error.message} />}
       <div css={styles.chartWrapper}>
