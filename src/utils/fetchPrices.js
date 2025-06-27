@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 
 import { TOKENS } from "@/constants";
+import { convertToReadablePrice } from "./contractUtils";
 
 const aggregatorV3InterfaceABI = [
   {
@@ -29,8 +30,7 @@ export async function fetchPriceFromChainlink(feedAddress) {
   );
   const roundData = await priceFeed.latestRoundData();
 
-  // Most Chainlink feeds use 8 decimals
-  return Number(roundData.answer) / 1e8;
+  return convertToReadablePrice(roundData.answer);
 }
 
 export async function fetchAllPrices() {

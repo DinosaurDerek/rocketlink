@@ -11,9 +11,8 @@ contract PriceMonitor {
     event PriceUpdated(int256 newPrice, uint256 timestamp);
     event ThresholdUpdated(uint256 newThreshold);
 
-    constructor(address _priceFeed, uint256 _initialThreshold) {
+    constructor(address _priceFeed) {
         priceFeed = AggregatorV3Interface(_priceFeed);
-        threshold = _initialThreshold;
     }
 
     function updatePrice() public {
