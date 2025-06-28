@@ -1,73 +1,28 @@
 /** @jsxImportSource @emotion/react */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useEffect } from "react";
-
-const FUJI_CHAIN_ID = "0xa869"; // 43113 in hex
-
-async function switchToFuji(setError) {
-  if (!window.ethereum) {
-    const msg = "MetaMask not installed";
-    setError(msg);
-    throw new Error(msg);
-  }
-
-  try {
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: FUJI_CHAIN_ID }],
-    });
-  } catch (err) {
-    if (err.code === 4902) {
-      // Chain not found, try to add it
-      try {
-        await window.ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainId: FUJI_CHAIN_ID,
-              chainName: "Avalanche Fuji Testnet",
-              rpcUrls: [process.env.NEXT_PUBLIC_FUJI_RPC_URL],
-              nativeCurrency: {
-                name: "Avalanche",
-                symbol: "AVAX",
-                decimals: 18,
-              },
-              blockExplorerUrls: ["https://testnet.snowtrace.io/"],
-            },
-          ],
-        });
-        // Try switching again after adding
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: FUJI_CHAIN_ID }],
-        });
-      } catch (addErr) {
-        setError("Failed to add Fuji network");
-        throw addErr;
-      }
-    } else {
-      setError("Failed to switch network");
-      throw err;
-    }
-  }
-}
+import { getWritableContract } from "@/utils/contractUtils";
+import { useToken } from "@/context/TokenContext";
 
 export default function WalletConnector() {
+  const { selectedToken } = useToken();
   const [address, setAddress] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Check if already connected
     async function checkConnection() {
       if (!window.ethereum) return;
-      const accounts = await window.ethereum.request({
-        method: "eth_accounts",
-      });
-      if (accounts.length > 0) {
-        setAddress(accounts[0]);
+      try {
+        const accounts = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+        if (accounts.length > 0) {
+          setAddress(accounts[0]);
+        }
+      } catch (err) {
+        console.error("Error checking wallet connection:", err);
       }
     }
     checkConnection();
@@ -75,17 +30,15 @@ export default function WalletConnector() {
 
   const connect = async () => {
     try {
-      await switchToFuji(setError);
-
+      await getWritableContract(selectedToken.id, setError);
       const [account] = await window.ethereum.request({
-        method: "eth_requestAccounts",
+        method: "eth_accounts",
       });
-
       setAddress(account);
       setError("");
     } catch (err) {
       console.error("Wallet connect error:", err);
-      if (!error) setError("Connection failed or was rejected");
+      if (!error) setError("Connection failed or was rejected.");
     }
   };
 

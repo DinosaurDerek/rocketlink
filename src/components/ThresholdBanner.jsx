@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 
 import { useToken } from "@/context/TokenContext";
-import { convertToReadablePrice } from "@/utils/contractUtils";
 import {
   getReadableContract,
   getWritableContract,
+  convertToReadablePrice,
 } from "@/utils/contractUtils";
 
 export default function ThresholdBanner() {
@@ -19,30 +19,38 @@ export default function ThresholdBanner() {
   const [thresholdInput, setThresholdInput] = useState(0);
 
   useEffect(() => {
+    if (!selectedToken?.id) return;
+
     (async () => {
       try {
         const contract = getReadableContract(selectedToken.id);
-        const status = await contract.isThresholdBreached();
-        const threshold = await contract.threshold();
-        const price = await contract.lastPrice();
+        const [status, threshold, price] = await Promise.all([
+          contract.isThresholdBreached(),
+          contract.threshold(),
+          contract.lastPrice(),
+        ]);
 
         setBreached(status);
         setLastPrice(convertToReadablePrice(price));
         setThresholdInput(convertToReadablePrice(threshold));
+        setError("");
       } catch (err) {
-        console.error("Error reading threshold breach status:", err);
+        console.error("Error reading contract data:", err);
         setError("Failed to load contract status.");
       }
     })();
-  }, [selectedToken]);
+  }, [selectedToken?.id]);
 
   const handleUpdatePrice = async () => {
     try {
-      const contract = await getWritableContract(selectedToken.id);
+      const contract = await getWritableContract(selectedToken.id, setError);
       const tx = await contract.updatePrice();
       await tx.wait();
-      const newPrice = await contract.lastPrice();
-      const newStatus = await contract.isThresholdBreached();
+
+      const [newPrice, newStatus] = await Promise.all([
+        contract.lastPrice(),
+        contract.isThresholdBreached(),
+      ]);
 
       setLastPrice(convertToReadablePrice(newPrice));
       setBreached(newStatus);
@@ -55,13 +63,13 @@ export default function ThresholdBanner() {
 
   const handleSetThreshold = async () => {
     try {
-      const contract = await getWritableContract(selectedToken.id);
+      const contract = await getWritableContract(selectedToken.id, setError);
       const tx = await contract.setThreshold(
-        ethers.parseUnits(thresholdInput, 8)
+        ethers.parseUnits(thresholdInput.toString(), 8)
       );
       await tx.wait();
-      const newStatus = await contract.isThresholdBreached();
 
+      const newStatus = await contract.isThresholdBreached();
       setBreached(newStatus);
       setError("");
     } catch (err) {
