@@ -21,7 +21,9 @@ export default function ThresholdBanner() {
   useEffect(() => {
     if (!selectedToken?.id) return;
 
-    (async () => {
+    let intervalId;
+
+    async function loadData() {
       try {
         const contract = getReadableContract(selectedToken.id);
         const [status, threshold, price] = await Promise.all([
@@ -38,7 +40,12 @@ export default function ThresholdBanner() {
         console.error("Error reading contract data:", err);
         setError("Failed to load contract status.");
       }
-    })();
+    }
+
+    loadData();
+    intervalId = setInterval(loadData, 15000);
+
+    return () => clearInterval(intervalId);
   }, [selectedToken?.id]);
 
   const handleUpdatePrice = async () => {
