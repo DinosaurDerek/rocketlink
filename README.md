@@ -1,47 +1,131 @@
 ## 🚀 Rocketlink
 
-**Rocketlink** is a solo-built crypto dashboard demo built with Next.js, designed for the Chromion Hackathon. It integrates Chainlink price feeds and smart contract automation on the Avalanche Fuji testnet.
+**Rocketlink** is a solo-built crypto dashboard built with Next.js for the Chromion Hackathon. It uses Chainlink Price Feeds and Chainlink Automation on Avalanche Fuji to provide live price monitoring via smart contracts.
 
-The app displays real-time token prices, renders historical price charts, and lets users set custom price alerts using Chainlink Automation. It’s built with React, Emotion, and Ethers.js for a clean, Web3-native frontend experience.
+### 🧠 What users can do
 
-## Demo
+- View real-time token prices from Chainlink
 
-[Rocketlink Demo — deployed via Vercel.](https://rocketlink.vercel.app/)
+- Explore historical token price charts (1-week view)
 
-## Notes
+- Set and manage token-specific price thresholds on-chain
 
-- This app uses the free tier of the CoinGecko API, which has strict rate limits. This may cause brief delays or failed fetches when switching tokens quickly or refreshing often.
-- Error messages are displayed in the UI when rate limits are hit.
+- Check if a threshold was breached (based on last on-chain update)
 
-## Getting Started
+- Manually trigger an on-chain price update
+
+<br />
+
+💡 Rocketlink is built with React, Emotion, and Ethers.js, with a focus on clean design and smart contract integration.
+
+## 🔗 Live Demo
+
+[Rocketlink — deployed on Vercel](https://rocketlink.vercel.app/)
+
+## ⚙️ Features
+
+- Real-time token prices from Chainlink
+
+- Historical price chart using CoinGecko
+
+- On-chain price thresholds (user-configurable)
+
+- Price monitoring with Chainlink Automation
+
+- Deployed to Avalanche Fuji testnet
+
+- Built-in wallet connect and Ethers.js integration
+
+## 📝 Notes
+
+- Only the first three tokens — AVAX, LINK, and ETH — are connected to Chainlink Automation and update prices automatically. The others are static for demo purposes.
+
+- This app uses the free tier of the CoinGecko API for historical price visualization, which has strict rate limits. This may cause delays loading the price chart. Error messages are displayed in the UI when rate limits are hit.
+
+- Contracts are built with the assumption that all Chainlink feeds return prices with 8 decimal places.
+
+- Some browser wallet extensions may conflict with each other. If you're having trouble initiating transactions, try disabling all but your primary wallet extension.
+
+- Token logos are static and may not reflect dynamic token state.
+
+## 🚀 Getting Started
 
 ```bash
 # Clone the repo
 git clone https://github.com/your-username/rocketlink.git
+cd rocketlink
 
 # Install dependencies
-cd rocketlink
-npm install
+yarn install
 
 # Run the dev server
-npm run dev
+yarn dev
 
 # Run unit tests
-npm run test
+yarn test
 
 # Run end-to-end tests
-npm run test:e2e
+yarn test:e2e
+
+# Compile contracts
+yarn compile
+
+# Deploy to Avalanche Fuji
+yarn deploy:fuji
 ```
 
-## TODOs
+### 🔧 Scripts
+
+| Command            | Description                                |
+| ------------------ | ------------------------------------------ |
+| `yarn dev`         | Start the local Next.js development server |
+| `yarn build`       | Build the production app                   |
+| `yarn start`       | Start the production server                |
+| `yarn lint`        | Run ESLint                                 |
+| `yarn test`        | Run unit tests (Jest)                      |
+| `yarn test:e2e`    | Run end-to-end tests (Playwright)          |
+| `yarn compile`     | Compile smart contracts (Hardhat)          |
+| `yarn deploy:fuji` | Deploy contracts to Avalanche Fuji testnet |
+| `yarn postcompile` | Generate ABI files after compilation       |
+
+## ✅ TODOs from Token Dash (original prototype)
 
 - Improve mobile UX (better layout for token list + chart)
-- Add query string support for token selection
-- Add multiple chart timeframes (1D, 1W, 1M, 6M, 1Y, YTD)
-- Add light/dark mode toggle
-- Add skeleton or smoother animation for token list load
-- Remove need for top of file emotion/react import
 
-## License
+- Add chart timeframes (1D, 1W, 1M, 6M, 1Y, YTD)
+
+- Add query string support for token selection
+
+- Add light/dark mode toggle
+
+- Add skeleton or smoother animation for token list load
+
+- Fix Emotion/Jest/Playwright compatibility
+
+- Remove need for top-level Emotion import
+
+## 🧠 Rocketlink-Specific TODOs (post hackathon ideas)
+
+- Switch to dedicated RPC endpoint for better reliability
+
+- Write tests for PriceMonitor
+
+- Refactor to use a single contract to manage all token thresholds instead of deploying one contract per token
+
+- Use WAGMI for wallet connection and better extension compatibility
+
+- Use updatedAt from contracts to compare Chainlink vs PriceMonitor freshness
+
+- Investigate SSR or hybrid rendering to prevent white flash caused by client-only hydration
+
+- Add support for other networks (e.g. Ethereum Sepolia)
+
+- More accurate error handling (e.g. rejected tx vs on-chain revert)
+
+## 🙌 Submission
+
+Built for the Chromion Hackathon — June 2025
+
+## 📄 License
 
 MIT
