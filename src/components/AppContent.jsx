@@ -17,7 +17,7 @@ export default function AppContent() {
 
   return (
     <div css={styles.container}>
-      <h2 css={styles.heading}>
+      <h2 css={styles.heading} data-testid="token-heading">
         {selectedToken.logo && (
           <Image
             src={selectedToken.logo}
