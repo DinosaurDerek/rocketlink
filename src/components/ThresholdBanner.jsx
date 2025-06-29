@@ -12,6 +12,7 @@ import {
 } from "@/utils/contractUtils";
 import Loader from "./Loader";
 import { formatDateTime, formatPrice } from "@/utils/format";
+import Button from "@/components/Button";
 
 export default function ThresholdBanner() {
   const { selectedToken } = useToken();
@@ -146,13 +147,9 @@ export default function ThresholdBanner() {
           value={thresholdInput}
           onChange={(event) => setThresholdInput(event.target.value)}
         />
-        <button
-          onClick={handleSetThreshold}
-          disabled={loading}
-          css={styles.button}
-        >
+        <Button onClick={handleSetThreshold} disabled={loading}>
           Set Alert
-        </button>
+        </Button>
       </div>
 
       <div css={styles.priceRow}>
@@ -160,13 +157,9 @@ export default function ThresholdBanner() {
           Last on-chain price:{" "}
           {lastPrice != null ? formatPrice(lastPrice) : <Loader />}
         </span>
-        <button
-          onClick={handleUpdatePrice}
-          disabled={loading}
-          css={styles.button}
-        >
+        <Button onClick={handleUpdatePrice} disabled={loading}>
           Update Price
-        </button>
+        </Button>
       </div>
       <div>
         <span>Last updated on-chain: </span>
@@ -222,20 +215,4 @@ const styles = {
     gap: "8px",
     flexWrap: "wrap",
   },
-  button: (theme) => ({
-    padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
-    backgroundColor: theme.colors.primary,
-    color: "#fff",
-    border: "none",
-    borderRadius: theme.borderRadius,
-    cursor: "pointer",
-    fontWeight: 500,
-    "&:hover": {
-      backgroundColor: theme.colors.primaryHover,
-    },
-    "&:disabled": {
-      backgroundColor: "#ccc",
-      cursor: "not-allowed",
-    },
-  }),
 };

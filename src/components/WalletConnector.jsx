@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { getWritableContract } from "@/utils/contractUtils";
 import { useToken } from "@/context/TokenContext";
+import Button from "@/components/Button";
 
 export default function WalletConnector() {
   const { selectedToken } = useToken();
@@ -53,9 +54,7 @@ export default function WalletConnector() {
           Connected: {address.slice(0, 6)}…{address.slice(-4)}
         </span>
       ) : (
-        <button css={styles.button} onClick={connect}>
-          Connect Wallet
-        </button>
+        <Button onClick={connect}>Connect Wallet</Button>
       )}
       {error && <div css={styles.error}>{error}</div>}
     </div>
@@ -63,18 +62,6 @@ export default function WalletConnector() {
 }
 
 const styles = {
-  button: (theme) => ({
-    padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
-    backgroundColor: theme.colors.primary,
-    color: "#fff",
-    border: "none",
-    borderRadius: theme.borderRadius,
-    cursor: "pointer",
-    fontWeight: 500,
-    "&:hover": {
-      backgroundColor: theme.colors.primaryHover,
-    },
-  }),
   connected: (theme) => ({
     fontWeight: 500,
     color: theme.colors.text,
