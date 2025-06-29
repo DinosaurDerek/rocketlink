@@ -29,16 +29,16 @@ export default function AppContent() {
         )}
         {selectedToken.label} ({selectedToken.symbol.toUpperCase()})
       </h2>
-      <ThresholdBanner />
       <div>
         Current price:{" "}
-        {selectedToken.price != null ? (
+        {selectedToken?.price ? (
           formatHeadingPrice(selectedToken.price)
         ) : (
-          <Loader size="small" />
+          <Loader />
         )}
       </div>
       <TokenChart tokenId={selectedToken.id} />
+      <ThresholdBanner />
     </div>
   );
 }

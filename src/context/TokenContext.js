@@ -12,8 +12,9 @@ export function TokenProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const FEED_POLL_INTERVAL = 15000;
+    const FEED_POLL_INTERVAL = 45000;
     let isMounted = true;
+    let intervalId;
 
     async function loadFeeds() {
       try {
@@ -21,7 +22,6 @@ export function TokenProvider({ children }) {
           STATIC_TOKENS.map(async (token) => {
             try {
               const price = await readPriceFromFeed(token.feedAddress);
-
               return { ...token, price };
             } catch {
               return token;
@@ -30,26 +30,47 @@ export function TokenProvider({ children }) {
         );
 
         if (!isMounted) return;
-
         setTokens(updated);
         setError(null);
+
         if (selectedId === null && updated.length) {
           setSelectedId(updated[0].id);
         }
       } catch (err) {
         if (!isMounted) return;
-
         console.error("Failed to load feed prices:", err);
         setError(err);
       }
     }
 
-    loadFeeds();
-    const interval = setInterval(loadFeeds, FEED_POLL_INTERVAL);
+    function startPolling() {
+      loadFeeds(); // Immediate on focus
+      intervalId = setInterval(loadFeeds, FEED_POLL_INTERVAL);
+    }
+
+    function stopPolling() {
+      clearInterval(intervalId);
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    }
+
+    // Initial mount
+    if (document.visibilityState === "visible") {
+      startPolling();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       isMounted = false;
-      clearInterval(interval);
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [selectedId]);
 

@@ -59,8 +59,19 @@ export default function TokenChart({ tokenId }) {
     return { chartData: points, xAxisTicks: Array.from(seen) };
   }, [data]);
 
-  if (error) return <Message text={error.message} />;
-  if (loading) return <Loader />;
+  if (error)
+    return (
+      <div css={styles.container}>
+        <Message text={error.message} />
+        <Loader />
+      </div>
+    );
+  if (loading)
+    return (
+      <div css={styles.container}>
+        <Loader />
+      </div>
+    );
 
   return (
     <div css={styles.container} data-testid="token-chart">

@@ -6,7 +6,7 @@ export const theme = {
     backgroundSecondary: "#161b22",
     text: "#e6edf3",
     card: "#1c2128",
-    cardHover: "#2f343b",
+    cardLight: "#2f343b",
     focusOutline: "#38bdf8",
     scrollbar: "#6e7681",
   },

@@ -42,7 +42,7 @@ const styles = {
     textAlign: "left",
     transition: "background-color 0.2s",
     "&:hover": {
-      backgroundColor: theme.colors.cardHover,
+      backgroundColor: theme.colors.cardLight,
     },
     "&:focus": {
       outline: `2px solid ${theme.colors.focusOutline}`,
