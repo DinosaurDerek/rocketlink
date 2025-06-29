@@ -1,6 +1,6 @@
 ## 🚀 Rocketlink
 
-**Rocketlink** is a solo-built crypto dashboard built with Next.js for the Chromion Hackathon. It uses Chainlink Price Feeds and Chainlink Automation on Avalanche Fuji to provide live price monitoring via smart contracts.
+**Rocketlink** is a solo-built crypto dashboard built with Next.js for the Chromion Hackathon. It builds upon an earlier prototype, Token Dash, extending it with smart contract integration and live on-chain monitoring. It uses Chainlink Price Feeds and Chainlink Automation on Avalanche Fuji to provide real-time price tracking via smart contracts.
 
 ### 🧠 What users can do
 
@@ -108,7 +108,7 @@ yarn deploy:fuji
 
 ## 🧠 Rocketlink-Specific TODOs (post hackathon ideas)
 
-- Switch to dedicated RPC endpoint for better reliability
+- Add alert notifications (email or in-app) when a threshold is breached
 
 - Write tests for PriceMonitor
 
@@ -123,6 +123,8 @@ yarn deploy:fuji
 - Add support for other networks (e.g. Ethereum Sepolia)
 
 - More accurate error handling (e.g. rejected tx vs on-chain revert)
+
+- Switch to dedicated RPC endpoint for better reliability
 
 ## 🙌 Submission
 
