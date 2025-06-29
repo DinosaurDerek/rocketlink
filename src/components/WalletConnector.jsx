@@ -14,10 +14,12 @@ export default function WalletConnector() {
   useEffect(() => {
     async function checkConnection() {
       if (!window.ethereum) return;
+
       try {
         const accounts = await window.ethereum.request({
           method: "eth_accounts",
         });
+
         if (accounts.length > 0) {
           setAddress(accounts[0]);
         }
@@ -31,9 +33,11 @@ export default function WalletConnector() {
   const connect = async () => {
     try {
       await getWritableContract(selectedToken.id, setError);
+
       const [account] = await window.ethereum.request({
         method: "eth_accounts",
       });
+
       setAddress(account);
       setError("");
     } catch (err) {

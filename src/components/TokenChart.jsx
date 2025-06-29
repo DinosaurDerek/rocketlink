@@ -1,5 +1,7 @@
 /** @jsxImportSource @emotion/react */
 "use client";
+
+import { useEffect, useState, useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -8,31 +10,57 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useMemo } from "react";
 import dayjs from "dayjs";
 
+import { fetchPriceHistory } from "@/utils/fetchPriceHistory";
 import {
   formatCompactPrice,
   formatDateTime,
   formatPrice,
 } from "@/utils/format";
+import Message from "@/components/Message";
+import Loader from "@/components/Loader";
 
-export default function TokenChart({ data }) {
+export default function TokenChart({ tokenId }) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!tokenId) return;
+    let cancelled = false;
+
+    setLoading(true);
+    setError(null);
+
+    fetchPriceHistory(tokenId, setError)
+      .then((history) => {
+        if (!cancelled) setData(history);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tokenId]);
+
   const { chartData, xAxisTicks } = useMemo(() => {
-    const seenDays = new Set();
-    const dataPoints = data.map(({ timestamp, price }) => {
-      const formattedDay = dayjs(timestamp).format("MMM D");
-      if (!seenDays.has(formattedDay)) {
-        seenDays.add(formattedDay);
-      }
-      return {
-        timestamp,
-        time: formattedDay,
-        price,
-      };
+    const seen = new Set();
+    const points = data.map(({ timestamp, price }) => {
+      const day = dayjs(timestamp).format("MMM D");
+      seen.add(day);
+      return { time: day, price, timestamp };
     });
-    return { chartData: dataPoints, xAxisTicks: [...seenDays] };
+    return { chartData: points, xAxisTicks: Array.from(seen) };
   }, [data]);
+
+  if (error) return <Message text={error.message} />;
+  if (loading) return <Loader />;
 
   return (
     <div css={styles.container} data-testid="token-chart">
@@ -41,28 +69,21 @@ export default function TokenChart({ data }) {
           <XAxis dataKey="time" ticks={xAxisTicks.slice(1)} />
           <YAxis
             domain={["auto", "auto"]}
-            tickFormatter={(val) => formatCompactPrice(val)}
+            tickFormatter={(value) => formatCompactPrice(value)}
             padding={{ bottom: 16 }}
           />
           <Tooltip
-            // Custom tooltip shows full date and time
-            content={({ active, payload, label }) => {
-              const dataPoint = payload?.[0]?.payload;
-
-              if (!active || !dataPoint) return null;
-
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const { timestamp, price } = payload[0].payload;
               return (
                 <div css={styles.tooltip}>
                   <div>
-                    <strong>
-                      {formatDateTime(dataPoint.timestamp) || label}
-                    </strong>
+                    <strong>{formatDateTime(timestamp)}</strong>
                   </div>
                   <div>
                     Price:{" "}
-                    <span css={styles.priceValue}>
-                      {formatPrice(dataPoint.price)}
-                    </span>
+                    <span css={styles.priceValue}>{formatPrice(price)}</span>
                   </div>
                 </div>
               );

@@ -1,44 +1,15 @@
 /** @jsxImportSource @emotion/react */
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
-
-import { fetchPriceHistory } from "@/utils/fetchPriceHistory";
-import ThresholdBanner from "@/components/ThresholdBanner";
 import { formatHeadingPrice } from "@/utils/format";
 import { useToken } from "@/context/TokenContext";
+import ThresholdBanner from "@/components/ThresholdBanner";
 import TokenChart from "@/components/TokenChart";
-import Message from "@/components/Message";
 import Loader from "@/components/Loader";
 
 export default function AppContent() {
   const { selectedToken } = useToken();
-  const [priceHistory, setPriceHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!selectedToken) return;
-
-    const timeout = setTimeout(async () => {
-      setLoading(true);
-
-      try {
-        setError(null);
-        const response = await fetchPriceHistory(selectedToken.id, setError);
-        setPriceHistory(response);
-      } catch (err) {
-        console.error("Failed to fetch price history:", err);
-        setError(err);
-        setLoading(false);
-      } finally {
-        setLoading(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timeout);
-  }, [selectedToken]);
 
   if (!selectedToken) {
     return <p>Select a token to view details</p>;
@@ -46,7 +17,7 @@ export default function AppContent() {
 
   return (
     <div css={styles.container}>
-      <h2 css={styles.heading} data-testid="token-heading">
+      <h2 css={styles.heading}>
         {selectedToken.logo && (
           <Image
             src={selectedToken.logo}
@@ -56,19 +27,18 @@ export default function AppContent() {
             height={24}
           />
         )}
-        {selectedToken.label} ({selectedToken.symbol?.toUpperCase()})
+        {selectedToken.label} ({selectedToken.symbol.toUpperCase()})
       </h2>
       <ThresholdBanner />
-      <p>Current price: {formatHeadingPrice(selectedToken.price)}</p>
-      {error && <Message text={error.message} />}
-      <div css={styles.chartWrapper}>
-        {(error || loading) && (
-          <div css={styles.loaderOverlay}>
-            <Loader />
-          </div>
+      <div>
+        Current price:{" "}
+        {selectedToken.price != null ? (
+          formatHeadingPrice(selectedToken.price)
+        ) : (
+          <Loader size="small" />
         )}
-        {!error && !!priceHistory?.length && <TokenChart data={priceHistory} />}
       </div>
+      <TokenChart tokenId={selectedToken.id} />
     </div>
   );
 }
@@ -87,17 +57,4 @@ const styles = {
     marginRight: theme.spacing(1),
     borderRadius: "50%",
   }),
-  chartWrapper: {
-    position: "relative",
-    minHeight: 300,
-  },
-  loaderOverlay: {
-    position: "absolute",
-    inset: 0,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1,
-    backgroundColor: "transparent",
-  },
 };
