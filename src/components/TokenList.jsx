@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { keyframes } from "@emotion/react";
 
-import { fetchAllPrices } from "@/utils/fetchPrices";
+import { readLastPrice, readPriceFromFeed } from "@/utils/contractUtils";
 import { useToken } from "@/context/TokenContext";
 import TokenCard from "@/components/TokenCard";
 import Message from "@/components/Message";
@@ -17,23 +17,39 @@ export default function TokenList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadTokens = async () => {
+    const fetchTokenPrices = async () => {
       try {
-        const response = await fetchAllPrices();
+        const updatedTokens = await Promise.all(
+          TOKENS.map(async (token) => {
+            try {
+              const lastPrice = await readLastPrice(token.id);
+              if (lastPrice && lastPrice > 0) {
+                return { ...token, price: lastPrice };
+              } else {
+                const fallbackPrice = await readPriceFromFeed(
+                  token.feedAddress
+                );
+                return { ...token, price: fallbackPrice };
+              }
+            } catch (err) {
+              console.error(`Error loading price for ${token.label}`, err);
+              return token;
+            }
+          })
+        );
+        setTokens(updatedTokens);
+        setSelectedToken((prev) => prev || updatedTokens[0]);
         setError(null);
-
-        if (response.length) {
-          setTokens(response);
-          setSelectedToken(response[0]);
-        }
       } catch (err) {
-        console.error("Failed to fetch prices:", err);
+        console.error("Failed to fetch token prices:", err);
         setError(err);
       }
     };
 
-    loadTokens();
-  }, [setError, setSelectedToken, setTokens]);
+    fetchTokenPrices();
+    const interval = setInterval(fetchTokenPrices, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleClick = (token) => {
     setSelectedToken(token);
