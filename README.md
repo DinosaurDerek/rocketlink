@@ -40,6 +40,8 @@
 
 - Only the first three tokens — AVAX, LINK, and ETH — are connected to Chainlink Automation and update prices automatically. The others are static for demo purposes.
 
+- The app uses Avalanche Fuji’s free public RPC endpoint (https://api.avax-test.network/ext/bc/C/rpc). While reliable for individual use or demo purposes, it may struggle with higher traffic or multiple simultaneous users due to rate limits and lack of dedicated resources.
+
 - This app uses the free tier of the CoinGecko API for historical price visualization, which has strict rate limits. This may cause delays loading the price chart. Error messages are displayed in the UI when rate limits are hit.
 
 - Contracts are built with the assumption that all Chainlink feeds return prices with 8 decimal places.
