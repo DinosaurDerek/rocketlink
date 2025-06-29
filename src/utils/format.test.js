@@ -33,8 +33,8 @@ describe("format utils", () => {
   });
 
   test("formatDateTime", () => {
-    expect(formatDateTime("2024-05-08T14:30:00Z")).toMatch(
-      /May 8, \d{1,2}:\d{2} (AM|PM)/
+    expect(formatDateTime("1750871003561")).toMatch(
+      /Jun 25, 2025, \d{1,2}:\d{2} (AM|PM)/
     );
   });
 });

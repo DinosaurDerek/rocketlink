@@ -64,5 +64,6 @@ export function formatPercent(value) {
 }
 
 export function formatDateTime(timestamp) {
-  return dayjs(timestamp).format("MMM D, h:mm A");
+  if (Number(timestamp) <= 0) return "--";
+  return dayjs(Number(timestamp)).format("MMM D, YYYY, h:mm A");
 }

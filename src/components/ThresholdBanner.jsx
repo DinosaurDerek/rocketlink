@@ -11,12 +11,13 @@ import {
   convertToReadablePrice,
 } from "@/utils/contractUtils";
 import Loader from "./Loader";
-import { formatPrice } from "@/utils/format";
+import { formatDateTime, formatPrice } from "@/utils/format";
 
 export default function ThresholdBanner() {
   const { selectedToken } = useToken();
   const [breached, setBreached] = useState(null);
   const [lastPrice, setLastPrice] = useState(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
   const [thresholdInput, setThresholdInput] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,14 +30,16 @@ export default function ThresholdBanner() {
     const loadData = async () => {
       try {
         const contract = getReadableContract(selectedToken.id);
-        const [status, threshold, price] = await Promise.all([
+        const [status, threshold, price, updatedAt] = await Promise.all([
           contract.isThresholdBreached(),
           contract.threshold(),
           contract.lastPrice(),
+          contract.lastUpdatedAt(),
         ]);
 
         setBreached(status);
         setLastPrice(convertToReadablePrice(price));
+        setLastUpdatedAt(Number(updatedAt) * 1000);
         setThresholdInput(convertToReadablePrice(threshold));
         setError("");
       } catch (err) {
@@ -152,7 +155,7 @@ export default function ThresholdBanner() {
         </button>
       </div>
 
-      <div css={styles.bottomRow}>
+      <div css={styles.priceRow}>
         <span>
           Last on-chain price:{" "}
           {lastPrice != null ? formatPrice(lastPrice) : <Loader />}
@@ -164,6 +167,10 @@ export default function ThresholdBanner() {
         >
           Update Price
         </button>
+      </div>
+      <div>
+        <span>Last updated on-chain: </span>
+        <span>{formatDateTime(lastUpdatedAt)}</span>
       </div>
     </div>
   );
@@ -208,7 +215,7 @@ const styles = {
     gap: "8px",
     flexWrap: "wrap",
   },
-  bottomRow: {
+  priceRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
