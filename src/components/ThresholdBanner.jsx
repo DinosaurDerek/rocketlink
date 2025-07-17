@@ -2,13 +2,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ethers } from "ethers";
 
 import { useToken } from "@/context/TokenContext";
 import {
-  getReadableContract,
-  getWritableContract,
-  convertToReadablePrice,
+  fetchThresholdContractData,
+  setThresholdAndGetStatus,
+  updatePriceAndStatus,
 } from "@/utils/contractUtils";
 import Loader from "./Loader";
 import { formatDateTime, formatPrice } from "@/utils/format";
@@ -28,73 +27,55 @@ export default function ThresholdBanner() {
 
     let intervalId;
 
-    const loadData = async () => {
-      try {
-        const contract = getReadableContract(selectedToken.id);
-        const [status, threshold, price, updatedAt] = await Promise.all([
-          contract.isThresholdBreached(),
-          contract.threshold(),
-          contract.lastPrice(),
-          contract.lastUpdatedAt(),
-        ]);
-
-        setBreached(status);
-        setLastPrice(convertToReadablePrice(price));
-        setLastUpdatedAt(Number(updatedAt) * 1000);
-        setThresholdInput(convertToReadablePrice(threshold));
-        setError("");
-      } catch (err) {
-        console.error("Error reading contract data:", err);
-        setError("⚠️ Failed to load contract data.");
-      }
+    const loadAndSet = () => {
+      fetchThresholdContractData(
+        selectedToken.id,
+        (data) => {
+          setBreached(data.breached);
+          setThresholdInput(data.threshold);
+          setLastPrice(data.lastPrice);
+          setLastUpdatedAt(data.lastUpdatedAt);
+        },
+        setError
+      );
     };
 
-    const startPolling = () => {
-      loadData();
-      intervalId = setInterval(loadData, 30000);
-    };
-
-    const stopPolling = () => clearInterval(intervalId);
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        startPolling();
-      } else {
-        stopPolling();
-      }
-    };
-
-    // Start polling when component mounts or when token changes
     if (document.visibilityState === "visible") {
-      startPolling();
+      loadAndSet();
+      intervalId = setInterval(loadAndSet, 30000);
     }
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        loadAndSet();
+        intervalId = setInterval(loadAndSet, 30000);
+      } else {
+        clearInterval(intervalId);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      stopPolling();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, [selectedToken?.id]);
 
   const handleUpdatePrice = async () => {
     setLoading(true);
+
     try {
-      const contract = await getWritableContract(selectedToken.id, setError);
-      const tx = await contract.updatePrice();
-      await tx.wait();
+      const { lastPrice, breached } = await updatePriceAndStatus(
+        selectedToken.id
+      );
 
-      const [newPrice, newStatus] = await Promise.all([
-        contract.lastPrice(),
-        contract.isThresholdBreached(),
-      ]);
-
-      setLastPrice(convertToReadablePrice(newPrice));
-      setBreached(newStatus);
+      setLastPrice(lastPrice);
+      setBreached(breached);
       setError("");
     } catch (err) {
       console.error("Failed to update price:", err);
-      setError("⚠️ Transaction failed or was rejected.");
+      setError("Transaction failed or was rejected.");
     } finally {
       setLoading(false);
     }
@@ -102,24 +83,22 @@ export default function ThresholdBanner() {
 
   const handleSetThreshold = async () => {
     if (thresholdInput === "") {
-      setError("⚠️ Threshold cannot be empty.");
+      setError("Threshold cannot be empty.");
       return;
     }
 
     setLoading(true);
     try {
-      const contract = await getWritableContract(selectedToken.id, setError);
-      const tx = await contract.setThreshold(
-        ethers.parseUnits(thresholdInput.toString(), 8)
+      const { breached } = await setThresholdAndGetStatus(
+        selectedToken.id,
+        thresholdInput
       );
-      await tx.wait();
 
-      const newStatus = await contract.isThresholdBreached();
-      setBreached(newStatus);
+      setBreached(breached);
       setError("");
     } catch (err) {
       console.error("Failed to set threshold:", err);
-      setError("⚠️ Transaction failed or was rejected.");
+      setError("Transaction failed or was rejected.");
     } finally {
       setLoading(false);
     }

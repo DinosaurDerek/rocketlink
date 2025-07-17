@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { readPriceFromFeed } from "@/utils/contractUtils";
+
 import { TOKENS as STATIC_TOKENS } from "@/constants";
+import { fetchTokenFeedPrices } from "@/utils/contractUtils";
 
 const TokenContext = createContext();
 
@@ -12,65 +13,35 @@ export function TokenProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const FEED_POLL_INTERVAL = 45000;
-    let isMounted = true;
+    const intervalMs = 45000;
     let intervalId;
 
-    async function loadFeeds() {
-      try {
-        const updated = await Promise.all(
-          STATIC_TOKENS.map(async (token) => {
-            try {
-              const price = await readPriceFromFeed(token.feedAddress);
-              return { ...token, price };
-            } catch {
-              return token;
-            }
-          })
-        );
+    const update = () => {
+      fetchTokenFeedPrices(
+        STATIC_TOKENS,
+        setTokens,
+        setError,
+        selectedId,
+        setSelectedId
+      );
+    };
 
-        if (!isMounted) return;
-        setTokens(updated);
-        setError(null);
+    const onVisibilityChange = () => {
+      document.visibilityState === "visible"
+        ? update()
+        : clearInterval(intervalId);
+    };
 
-        if (selectedId === null && updated.length) {
-          setSelectedId(updated[0].id);
-        }
-      } catch (err) {
-        if (!isMounted) return;
-        console.error("Failed to load feed prices:", err);
-        setError(err);
-      }
-    }
-
-    function startPolling() {
-      loadFeeds(); // Immediate on focus
-      intervalId = setInterval(loadFeeds, FEED_POLL_INTERVAL);
-    }
-
-    function stopPolling() {
-      clearInterval(intervalId);
-    }
-
-    function handleVisibilityChange() {
-      if (document.visibilityState === "visible") {
-        startPolling();
-      } else {
-        stopPolling();
-      }
-    }
-
-    // Initial mount
     if (document.visibilityState === "visible") {
-      startPolling();
+      update();
+      intervalId = setInterval(update, intervalMs);
     }
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      isMounted = false;
-      stopPolling();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [selectedId]);
 

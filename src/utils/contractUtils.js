@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 
-import { CONTRACT_ADDRESSES, CONTRACT_ABI, FUJI_CHAIN_ID } from "@/constants";
+import { CONTRACT_ADDRESSES, CONTRACT_ABI } from "@/constants";
+import { ensureCorrectNetwork } from "@/utils/network";
 
 const CHAINLINK_FEED_ABI = [
   {
@@ -25,46 +26,7 @@ function getJsonProvider() {
 export async function getWritableContract(id, setError) {
   if (!window.ethereum) throw new Error("MetaMask not available");
 
-  const currentChainId = await window.ethereum.request({
-    method: "eth_chainId",
-  });
-
-  if (currentChainId !== FUJI_CHAIN_ID) {
-    try {
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: FUJI_CHAIN_ID }],
-      });
-    } catch (err) {
-      if (err.code === 4902) {
-        // Network not added to MetaMask yet
-        try {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: FUJI_CHAIN_ID,
-                chainName: "Avalanche Fuji Testnet",
-                rpcUrls: [process.env.NEXT_PUBLIC_FUJI_RPC_URL],
-                nativeCurrency: {
-                  name: "Avalanche",
-                  symbol: "AVAX",
-                  decimals: 18,
-                },
-                blockExplorerUrls: ["https://testnet.snowtrace.io/"],
-              },
-            ],
-          });
-        } catch (addErr) {
-          if (setError) setError("Failed to add Fuji network");
-          throw addErr;
-        }
-      } else {
-        if (setError) setError("Please switch to Avalanche Fuji Testnet");
-        throw err;
-      }
-    }
-  }
+  await ensureCorrectNetwork(setError);
 
   const provider = new ethers.BrowserProvider(window.ethereum);
   const signer = await provider.getSigner();
@@ -99,4 +61,84 @@ export async function readPriceFromFeed(feedAddress) {
 
 export function convertToReadablePrice(price) {
   return Number(price) / 1e8;
+}
+
+export async function fetchTokenFeedPrices(
+  tokens,
+  setTokens,
+  setError,
+  selectedId,
+  setSelectedId
+) {
+  try {
+    const updated = await Promise.all(
+      tokens.map(async (token) => {
+        try {
+          const price = await readPriceFromFeed(token.feedAddress);
+          return { ...token, price };
+        } catch {
+          return token;
+        }
+      })
+    );
+
+    setTokens(updated);
+    setError(null);
+    if (selectedId === null && updated.length) {
+      setSelectedId(updated[0].id);
+    }
+  } catch (err) {
+    console.error("Failed to load feed prices:", err);
+    setError(err);
+  }
+}
+
+export async function fetchThresholdContractData(tokenId, setState, setError) {
+  try {
+    const contract = getReadableContract(tokenId);
+    const [status, threshold, price, updatedAt] = await Promise.all([
+      contract.isThresholdBreached(),
+      contract.threshold(),
+      contract.lastPrice(),
+      contract.lastUpdatedAt(),
+    ]);
+
+    setState({
+      breached: status,
+      threshold: convertToReadablePrice(threshold),
+      lastPrice: convertToReadablePrice(price),
+      lastUpdatedAt: Number(updatedAt) * 1000,
+    });
+    setError("");
+  } catch (err) {
+    console.error("Error reading contract data:", err);
+    setError("⚠️ Failed to load contract data.");
+  }
+}
+
+export async function updatePriceAndStatus(tokenId) {
+  const contract = await getWritableContract(tokenId);
+  const tx = await contract.updatePrice();
+  await tx.wait();
+
+  const [newPrice, newStatus] = await Promise.all([
+    contract.lastPrice(),
+    contract.isThresholdBreached(),
+  ]);
+
+  return {
+    lastPrice: convertToReadablePrice(newPrice),
+    breached: newStatus,
+  };
+}
+
+export async function setThresholdAndGetStatus(tokenId, threshold) {
+  const contract = await getWritableContract(tokenId);
+  const tx = await contract.setThreshold(
+    ethers.parseUnits(threshold.toString(), 8)
+  );
+  await tx.wait();
+
+  const newStatus = await contract.isThresholdBreached();
+  return { breached: newStatus };
 }
