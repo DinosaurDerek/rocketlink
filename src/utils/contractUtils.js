@@ -1,7 +1,14 @@
-import { ethers } from "ethers";
+import {
+  BrowserProvider,
+  Contract,
+  formatUnits,
+  JsonRpcProvider,
+  parseUnits,
+} from "ethers";
 
-import { CONTRACT_ADDRESSES, CONTRACT_ABI } from "@/constants";
+import { CONTRACT_ADDRESSES } from "@/constants";
 import { ensureCorrectNetwork } from "@/utils/network";
+import { PriceMonitorAbi } from "@/abi/PriceMonitor.js";
 
 const CHAINLINK_FEED_ABI = [
   {
@@ -19,8 +26,31 @@ const CHAINLINK_FEED_ABI = [
   },
 ];
 
+function normalizePriceUnits(price) {
+  return Number(formatUnits(price, 8)); // Assuming 8 decimals for price feeds
+}
+
+function getPriceMonitorContract(address, signerOrProvider) {
+  return new Contract(address, PriceMonitorAbi, signerOrProvider);
+}
+
+function getFeedContract(address, signerOrProvider) {
+  return new Contract(address, CHAINLINK_FEED_ABI, signerOrProvider);
+}
+
 function getJsonProvider() {
-  return new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_FUJI_RPC_URL);
+  return new JsonRpcProvider(process.env.NEXT_PUBLIC_FUJI_RPC_URL);
+}
+
+function getReadableContract(id) {
+  return getPriceMonitorContract(CONTRACT_ADDRESSES[id], getJsonProvider());
+}
+
+async function readPriceFromFeed(feedAddress) {
+  const feed = getFeedContract(feedAddress, getJsonProvider());
+  const { answer } = await feed.latestRoundData();
+
+  return normalizePriceUnits(answer);
 }
 
 export async function getWritableContract(id, setError) {
@@ -28,39 +58,10 @@ export async function getWritableContract(id, setError) {
 
   await ensureCorrectNetwork(setError);
 
-  const provider = new ethers.BrowserProvider(window.ethereum);
+  const provider = new BrowserProvider(window.ethereum);
   const signer = await provider.getSigner();
 
-  return new ethers.Contract(CONTRACT_ADDRESSES[id], CONTRACT_ABI, signer);
-}
-
-export function getReadableContract(id) {
-  return new ethers.Contract(
-    CONTRACT_ADDRESSES[id],
-    CONTRACT_ABI,
-    getJsonProvider()
-  );
-}
-
-export async function readLastPrice(id) {
-  const contract = getReadableContract(id);
-  const lastPrice = await contract.lastPrice();
-  return convertToReadablePrice(lastPrice);
-}
-
-export async function readPriceFromFeed(feedAddress) {
-  const feed = new ethers.Contract(
-    feedAddress,
-    CHAINLINK_FEED_ABI,
-    getJsonProvider()
-  );
-  const { answer } = await feed.latestRoundData();
-
-  return convertToReadablePrice(answer);
-}
-
-export function convertToReadablePrice(price) {
-  return Number(price) / 1e8;
+  return getPriceMonitorContract(CONTRACT_ADDRESSES[id], signer);
 }
 
 export async function fetchTokenFeedPrices(
@@ -93,7 +94,7 @@ export async function fetchTokenFeedPrices(
   }
 }
 
-export async function fetchThresholdContractData(tokenId, setState, setError) {
+export async function fetchPriceMonitorData(tokenId, setState, setError) {
   try {
     const contract = getReadableContract(tokenId);
     const [status, threshold, price, updatedAt] = await Promise.all([
@@ -105,8 +106,8 @@ export async function fetchThresholdContractData(tokenId, setState, setError) {
 
     setState({
       breached: status,
-      threshold: convertToReadablePrice(threshold),
-      lastPrice: convertToReadablePrice(price),
+      threshold: normalizePriceUnits(threshold),
+      lastPrice: normalizePriceUnits(price),
       lastUpdatedAt: Number(updatedAt) * 1000,
     });
     setError("");
@@ -127,16 +128,14 @@ export async function updatePriceAndStatus(tokenId) {
   ]);
 
   return {
-    lastPrice: convertToReadablePrice(newPrice),
+    lastPrice: normalizePriceUnits(newPrice),
     breached: newStatus,
   };
 }
 
 export async function setThresholdAndGetStatus(tokenId, threshold) {
   const contract = await getWritableContract(tokenId);
-  const tx = await contract.setThreshold(
-    ethers.parseUnits(threshold.toString(), 8)
-  );
+  const tx = await contract.setThreshold(parseUnits(threshold.toString(), 8));
   await tx.wait();
 
   const newStatus = await contract.isThresholdBreached();

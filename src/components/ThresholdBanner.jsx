@@ -3,15 +3,15 @@
 
 import { useEffect, useState } from "react";
 
-import { useToken } from "@/context/TokenContext";
 import {
-  fetchThresholdContractData,
+  fetchPriceMonitorData,
   setThresholdAndGetStatus,
   updatePriceAndStatus,
 } from "@/utils/contractUtils";
 import Loader from "./Loader";
-import { formatDateTime, formatPrice } from "@/utils/format";
 import Button from "@/components/Button";
+import { useToken } from "@/context/TokenContext";
+import { formatDateTime, formatPrice } from "@/utils/format";
 
 export default function ThresholdBanner() {
   const { selectedToken } = useToken();
@@ -28,7 +28,7 @@ export default function ThresholdBanner() {
     let intervalId;
 
     const loadAndSet = () => {
-      fetchThresholdContractData(
+      fetchPriceMonitorData(
         selectedToken.id,
         (data) => {
           setBreached(data.breached);
