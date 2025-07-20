@@ -1,17 +1,17 @@
 /** @jsxImportSource @emotion/react */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
-  fetchPriceMonitorData,
   setThresholdAndGetStatus,
   updatePriceAndStatus,
 } from "@/utils/contractUtils";
-import Loader from "./Loader";
+import Loader from "@/components/Loader";
 import Button from "@/components/Button";
 import { useToken } from "@/context/TokenContext";
 import { formatDateTime, formatPrice } from "@/utils/format";
+import { usePriceMonitorPolling } from "@/hooks/usePriceMonitorPolling";
 
 export default function ThresholdBanner() {
   const { selectedToken } = useToken();
@@ -22,45 +22,16 @@ export default function ThresholdBanner() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!selectedToken?.id) return;
-
-    let intervalId;
-
-    const loadAndSet = () => {
-      fetchPriceMonitorData(
-        selectedToken.id,
-        (data) => {
-          setBreached(data.breached);
-          setThresholdInput(data.threshold);
-          setLastPrice(data.lastPrice);
-          setLastUpdatedAt(data.lastUpdatedAt);
-        },
-        setError
-      );
-    };
-
-    if (document.visibilityState === "visible") {
-      loadAndSet();
-      intervalId = setInterval(loadAndSet, 30000);
-    }
-
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        loadAndSet();
-        intervalId = setInterval(loadAndSet, 30000);
-      } else {
-        clearInterval(intervalId);
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      clearInterval(intervalId);
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [selectedToken?.id]);
+  usePriceMonitorPolling(
+    selectedToken,
+    (data) => {
+      setBreached(data.breached);
+      setThresholdInput(data.threshold);
+      setLastPrice(data.lastPrice);
+      setLastUpdatedAt(data.lastUpdatedAt);
+    },
+    setError
+  );
 
   const handleUpdatePrice = async () => {
     setLoading(true);
