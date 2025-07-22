@@ -2,6 +2,8 @@
 
 **Rocketlink** is a solo-built crypto dashboard built with Next.js for the Chromion Hackathon. It builds upon an earlier prototype, Token Dash, extending it with smart contract integration and live on-chain monitoring. It uses Chainlink Price Feeds and Chainlink Automation on Avalanche Fuji to provide real-time price tracking via smart contracts.
 
+**Tech Stack**: Next.js, React, Emotion, Ethers.js, Hardhat, Solidity, Chainlink, Jest, Playwright (basic)
+
 ### 🧠 What users can do
 
 - View real-time token prices from Chainlink
@@ -12,11 +14,7 @@
 
 - Check if a threshold was breached (based on last on-chain update)
 
-- Manually trigger an on-chain price update
-
-<br />
-
-💡 Rocketlink is built with React, Emotion, and Ethers.js, with a focus on clean design and smart contract integration.
+- Manually trigger an on-chain price update (for testing or demonstration)
 
 ## 🔗 Live Demo
 
@@ -90,7 +88,7 @@ yarn deploy:fuji
 | `yarn deploy:fuji` | Deploy contracts to Avalanche Fuji testnet |
 | `yarn postcompile` | Generate ABI files after compilation       |
 
-## ✅ TODOs from Token Dash (original prototype)
+## ✅ Future Enhancements from Token Dash (original prototype)
 
 - Improve mobile UX (better layout for token list + chart)
 
@@ -102,11 +100,11 @@ yarn deploy:fuji
 
 - Add skeleton or smoother animation for token list load
 
-- Fix Emotion/Jest/Playwright compatibility
+- Fix Emotion/Jest/Playwright compatibility to enable component tests
 
 - Remove need for top-level Emotion import
 
-## 🧠 Rocketlink-Specific TODOs (post hackathon ideas)
+## 🧠 Rocketlink-Specific Future Enhancements
 
 - Add alert notifications (email or in-app) when a threshold is breached
 
@@ -118,7 +116,7 @@ yarn deploy:fuji
 
 - Use updatedAt from contracts to compare Chainlink vs PriceMonitor freshness
 
-- Investigate SSR or hybrid rendering to prevent white flash caused by client-only hydration
+- Consider SSR or hybrid rendering to eliminate initial white flash from client-only hydration
 
 - Add support for other networks (e.g. Ethereum Sepolia)
 
