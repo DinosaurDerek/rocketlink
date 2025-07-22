@@ -42,11 +42,11 @@ function getJsonProvider() {
   return new JsonRpcProvider(process.env.NEXT_PUBLIC_FUJI_RPC_URL);
 }
 
-function getReadableContract(id) {
+export function getReadableContract(id) {
   return getPriceMonitorContract(CONTRACT_ADDRESSES[id], getJsonProvider());
 }
 
-async function readPriceFromFeed(feedAddress) {
+export async function readPriceFromFeed(feedAddress) {
   const feed = getFeedContract(feedAddress, getJsonProvider());
   const { answer } = await feed.latestRoundData();
 
