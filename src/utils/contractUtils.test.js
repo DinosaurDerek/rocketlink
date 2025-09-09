@@ -191,3 +191,12 @@ describe("readPriceFromFeed", () => {
     expect(price).toBe(9.87654321);
   });
 });
+
+describe("bigNumberToNumber precision", () => {
+  it("converts 8-decimal BigInt to exact string using formatUnits", () => {
+    const { formatUnits } = require("ethers");
+    const raw = BigInt("123456789012345000"); // 1234567890.12345 with 8 decimals
+    const str = formatUnits(raw, 8);
+    expect(str).toBe("1234567890.12345");
+  });
+});

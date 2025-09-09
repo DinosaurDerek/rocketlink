@@ -26,8 +26,11 @@ const CHAINLINK_FEED_ABI = [
   },
 ];
 
-function normalizePriceUnits(price) {
-  return Number(formatUnits(price, 8)); // Assuming 8 decimals for price feeds
+// helper: convert a BigNumber price -> number (for display)
+// assume 8 decimals for Chainlink price feeds
+function bigNumberToNumber(bigNumber) {
+  // formatUnits returns a string; parseFloat yields JS number for display
+  return parseFloat(formatUnits(bigNumber, 8));
 }
 
 function getPriceMonitorContract(address, signerOrProvider) {
@@ -50,7 +53,7 @@ export async function readPriceFromFeed(feedAddress) {
   const feed = getFeedContract(feedAddress, getJsonProvider());
   const { answer } = await feed.latestRoundData();
 
-  return normalizePriceUnits(answer);
+  return bigNumberToNumber(answer);
 }
 
 export async function getWritableContract(id, setError) {
@@ -106,9 +109,9 @@ export async function fetchPriceMonitorData(tokenId, setState, setError) {
 
     setState({
       breached: status,
-      threshold: normalizePriceUnits(threshold),
-      lastPrice: normalizePriceUnits(price),
-      lastUpdatedAt: Number(updatedAt) * 1000,
+      threshold: bigNumberToNumber(threshold),
+      lastPrice: bigNumberToNumber(price),
+      lastUpdatedAt: Number(updatedAt) * 1000, // ms for JS Date
     });
     setError("");
   } catch (err) {
@@ -128,7 +131,7 @@ export async function updatePriceAndStatus(tokenId) {
   ]);
 
   return {
-    lastPrice: normalizePriceUnits(newPrice),
+    lastPrice: bigNumberToNumber(newPrice),
     breached: newStatus,
   };
 }
