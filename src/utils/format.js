@@ -7,9 +7,16 @@ export function formatPrice(value) {
 
   const num = Number(value);
 
-  if (num >= 10) {
+  if (num >= 10_000) {
     return `$${num.toLocaleString(undefined, {
       minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  if (num >= 10) {
+    return `$${num.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
   }

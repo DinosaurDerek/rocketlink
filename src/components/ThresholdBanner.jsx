@@ -18,7 +18,8 @@ export default function ThresholdBanner() {
   const [breached, setBreached] = useState(null);
   const [lastPrice, setLastPrice] = useState(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
-  const [thresholdInput, setThresholdInput] = useState(0);
+  const [thresholdOnChain, setThresholdOnChain] = useState(0);
+  const [thresholdInput, setThresholdInput] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -26,9 +27,11 @@ export default function ThresholdBanner() {
     selectedToken,
     (data) => {
       setBreached(data.breached);
-      setThresholdInput(data.threshold);
+      setThresholdOnChain(data.threshold);
       setLastPrice(data.lastPrice);
       setLastUpdatedAt(data.lastUpdatedAt);
+      // Initialize input only if it's untouched
+      setThresholdInput((prev) => (prev === null ? data.threshold : prev));
     },
     setError
   );
@@ -94,14 +97,19 @@ export default function ThresholdBanner() {
         <input
           id="threshold"
           type="number"
-          value={thresholdInput}
+          value={thresholdInput ?? ""}
           onChange={(event) => setThresholdInput(event.target.value)}
         />
         <Button onClick={handleSetThreshold} disabled={loading}>
-          Set Alert
+          Update Alert
         </Button>
       </div>
 
+      <div>
+        <span>
+          Last on-chain alert threshold: {formatPrice(thresholdOnChain)}
+        </span>
+      </div>
       <div css={styles.priceRow}>
         <span>
           Last on-chain price:{" "}
@@ -122,7 +130,7 @@ export default function ThresholdBanner() {
 const styles = {
   container: (theme) => ({
     marginTop: theme.spacing(2),
-    padding: theme.spacing(1),
+    padding: theme.spacing(1.5),
     borderRadius: theme.borderRadius,
     backgroundColor: theme.colors.cardLight,
     color: theme.colors.text,
@@ -130,39 +138,41 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: theme.spacing(1),
+    alignSelf: "center",
   }),
-  alertBreached: {
+  alertBreached: (theme) => ({
     backgroundColor: "#ffe5e5",
     color: "#a00",
-    padding: "8px",
-    borderRadius: "8px",
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
     fontWeight: 600,
-  },
-  alertSafe: {
+  }),
+  alertSafe: (theme) => ({
     backgroundColor: "#e6ffe6",
     color: "#065f46",
-    padding: "8px",
-    borderRadius: "8px",
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
     fontWeight: 600,
-  },
-  error: {
+  }),
+  error: (theme) => ({
     backgroundColor: "#fff3cd",
     color: "#856404",
-    padding: "8px",
-    borderRadius: "8px",
+    padding: theme.spacing(1),
+    borderRadius: theme.spacing(1),
     fontWeight: 600,
-  },
-  formRow: {
+  }),
+  formRow: (theme) => ({
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    columnGap: theme.spacing(3),
+    rowGap: theme.spacing(1),
     flexWrap: "wrap",
-  },
-  priceRow: {
+  }),
+  priceRow: (theme) => ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: "8px",
+    gap: theme.spacing(1),
     flexWrap: "wrap",
-  },
+  }),
 };
