@@ -8,30 +8,31 @@ export function usePolling({
 }) {
   const intervalRef = useRef(null);
 
+  const startPolling = () => {
+    if (intervalRef.current) return;
+    callback();
+    intervalRef.current = setInterval(callback, intervalMs);
+  };
+
+  const stopPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
   useEffect(() => {
-    const startPolling = () => {
-      callback();
-      intervalRef.current = setInterval(callback, intervalMs);
-    };
-
-    const stopPolling = () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState !== "visible") {
-        stopPolling();
-        return;
-      }
-      stopPolling();
-    };
-
     if (!visibility || document.visibilityState === "visible") {
       startPolling();
     }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
 
     if (visibility) {
       document.addEventListener("visibilitychange", handleVisibilityChange);

@@ -20,8 +20,6 @@
 
 [Rocketlink — deployed on Vercel](https://rocketlink.vercel.app/)
 
-> ⚠️ Deployed demo occasionally gets stuck on initial load from external links. If that happens, try reloading or entering the URL directly.
-
 ## ⚙️ Features
 
 - Real-time token prices from Chainlink
